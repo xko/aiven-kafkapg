@@ -23,7 +23,7 @@ object Main {
       (cpu.getSystemCpuLoadBetweenTicks(ticksBefore), cpu.getSystemCpuLoadTicks)
     }.map(_._1)
     val records = cpuLoads.map(
-      l => new ProducerRecord("test","",s"""{"username":"$hostName", "cpuLoad":"$l"}""")
+      l => new ProducerRecord[String,String]("test",null,s"""{"username":"$hostName", "cpuLoad":"$l"}""")
     )
 
     val producerCfg = KafkaProducerConfig.default.copy( List("localhost:9092") )
