@@ -8,3 +8,10 @@
 /terraform.tfstate.*
 /terraform.tfvars
 **/target/
+
+/ca.pem
+/service.cert
+/service.key
+/client.keystore.p12
+/client.truststore.jks
+/client.properties
