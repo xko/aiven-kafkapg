@@ -1,8 +1,10 @@
 package aiven.kafkapg
 
 
+import java.io.File
 import java.net.InetAddress
 
+import com.typesafe.config.ConfigFactory
 import oshi.SystemInfo
 import monix.execution.Scheduler
 import monix.reactive.Observable
@@ -23,10 +25,10 @@ object Main {
       (cpu.getSystemCpuLoadBetweenTicks(ticksBefore), cpu.getSystemCpuLoadTicks)
     }.map(_._1)
     val records = cpuLoads.map(
-      l => new ProducerRecord[String,String]("test",null,s"""{"host":"$hostName", "cpuLoad":"$l"}""")
+      l => new ProducerRecord[String,String]("os-metrics-log",null,s"""{"host":"$hostName", "cpuLoad":"$l"}""")
     )
 
-    val producerCfg = KafkaProducerConfig.default.copy( List("localhost:9092") )
+    val producerCfg = KafkaProducerConfig(ConfigFactory.parseFileAnySyntax(new File("client.properties")))
     implicit val scheduler: Scheduler = monix.execution.Scheduler.global
 
     val producer = KafkaProducerSink[String,String](producerCfg, scheduler)
