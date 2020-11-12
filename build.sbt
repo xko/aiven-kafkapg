@@ -11,3 +11,5 @@ libraryDependencies += "io.monix" %% "monix-kafka-1x" % "1.0.0-RC6"
 
 libraryDependencies += "org.scalatest" %% "scalatest" % "3.2.0" % Test
 
+libraryDependencies += "org.slf4j" % "slf4j-simple" % "1.7.30" % Runtime
+
