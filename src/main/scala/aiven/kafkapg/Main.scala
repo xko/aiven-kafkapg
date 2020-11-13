@@ -20,12 +20,25 @@ object Main {
     val si = new SystemInfo
     val cpu = si.getHardware.getProcessor
     val hostName = InetAddress.getLocalHost.getHostName
+    val schema = """ {
+                   |    "type": "struct",
+                   |    "fields": [
+                   |        { "field": "host", "type": "string", "optional": false },
+                   |        { "field": "cpuLoad", "type": "string", "optional": false }
+                   |    ]
+                   |  }""".stripMargin
 
-    val cpuLoads = Observable.interval(1.second).scan(0d,cpu.getSystemCpuLoadTicks) { case ( (_,ticksBefore), _) =>
+    val cpuLoads = Observable.interval(3.second).scan(0d,cpu.getSystemCpuLoadTicks) { case ( (_,ticksBefore), _) =>
       (cpu.getSystemCpuLoadBetweenTicks(ticksBefore), cpu.getSystemCpuLoadTicks)
     }.map(_._1)
-    val records = cpuLoads.map(
-      l => new ProducerRecord[String,String]("os-metrics-log",null,s"""{"host":"$hostName", "cpuLoad":"$l"}""")
+    val records = cpuLoads.map( l => {
+        val msg =
+          s"""{"schema": $schema,
+             | "payload": {"host":"$hostName", "cpuLoad":"$l"}
+             | }""".stripMargin
+        println(msg)
+        new ProducerRecord[String,String]("os-metrics-log",null,msg)
+      }
     )
 
     val producerCfg = KafkaProducerConfig(ConfigFactory.parseFileAnySyntax(new File("client.properties")))
