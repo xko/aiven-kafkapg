@@ -115,7 +115,7 @@ resource "aiven_kafka_connector" "kafka-pg-sink-con" {
     "connector.class" = "io.aiven.connect.jdbc.JdbcSinkConnector"
     "value.converter" = "org.apache.kafka.connect.json.JsonConverter"
     "topics" = aiven_kafka_topic.topic-os-metrics.topic_name
-    "connection.url" = "jdbc:postgresql://${aiven_service.pg-sink.service_host}:${aiven_service.pg-sink.service_port}/${aiven_database.db-os-metrics.database_name}?ssl=true}"
+    "connection.url" = "jdbc:postgresql://${aiven_service.pg-sink.service_host}:${aiven_service.pg-sink.service_port}/${aiven_database.db-os-metrics.database_name}?ssl=true"
     "connection.user" = aiven_service.pg-sink.service_username
     "connection.password" = aiven_service.pg-sink.service_password
     "auto.create" = "true"
