@@ -11,11 +11,11 @@ terraform {
   }
 }
 
-variable "aiven_api_token" {}
-variable "aiven_project_name" {}
-variable "cloud_region" {
-  default = "google-europe-west3"
-}
+variable "aiven_api_token" { }
+variable "aiven_project_name" { }
+variable "aiven_cloud_region" { default = "google-europe-west3" }
+variable "aiven_osmetrics_topic" { }
+variable "aiven_connect_error_tolerance" { default = "none" }
 
 provider "aiven" {
   api_token = var.aiven_api_token
@@ -27,7 +27,7 @@ resource "aiven_project" "xko-aiven-kafkapg" {
 
 resource "aiven_service" "pg-sink" {
   project = aiven_project.xko-aiven-kafkapg.project
-  cloud_name = var.cloud_region
+  cloud_name = var.aiven_cloud_region
   plan = "startup-4"
   service_name = "pg-sink"
   service_type = "pg"
@@ -49,7 +49,7 @@ resource "aiven_database" "db-os-metrics" {
 
 resource "aiven_service" "kafka" {
   project = aiven_project.xko-aiven-kafkapg.project
-  cloud_name = var.cloud_region
+  cloud_name = var.aiven_cloud_region
   plan = "startup-2"
   service_name = "kafka"
   service_type = "kafka"
@@ -64,7 +64,7 @@ resource "aiven_service" "kafka" {
 
 resource "aiven_service" "kafka_connect" {
   project = aiven_project.xko-aiven-kafkapg.project
-  cloud_name = var.cloud_region
+  cloud_name = var.aiven_cloud_region
   plan = "startup-4"
   service_name = "kafka-connect"
   service_type = "kafka_connect"
@@ -98,7 +98,7 @@ resource "aiven_kafka_topic" "topic-os-metrics" {
   depends_on = [aiven_service.kafka]
   project = aiven_project.xko-aiven-kafkapg.project
   service_name = aiven_service.kafka.service_name
-  topic_name = "os-metrics-log"
+  topic_name = var.aiven_osmetrics_topic
   partitions = 3
   replication = 2
 
@@ -123,6 +123,6 @@ resource "aiven_kafka_connector" "kafka-pg-sink-con" {
     "value.converter.schemas.enable"=true
     "errors.deadletterqueue.topic.name"= "os-metrics-log-dead"
     "errors.deadletterqueue.topic.replication.factor"= 2
-    "errors.tolerance" = "all"
+    "errors.tolerance" = var.aiven_connect_error_tolerance
   }
 }
