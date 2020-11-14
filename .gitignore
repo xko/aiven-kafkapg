@@ -15,3 +15,4 @@
 /client.keystore.p12
 /client.truststore.jks
 /client.properties
+/pg.client.properties

@@ -9,6 +9,7 @@ echo
 
 . init-aiven.sh
 . init-kafka.sh
+. init-pg.sh
 
 echo
 echo ".. all done"
