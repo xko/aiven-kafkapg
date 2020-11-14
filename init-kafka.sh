@@ -2,6 +2,8 @@
 set -e
 . src/main/bash/functions.sh
 
+OUTFILE=kafka.client.properties
+
 prereq
 
 echo -n "Will now generate Java client certificate files for kafka and client.properties." ; ask
@@ -12,8 +14,9 @@ fi
 echo -n "Create the new password for client.truststore.jks and client.keystore.p12 (6+ chars):"
 read -r CERT_PWD
 avn service user-kafka-java-creds --username avnadmin kafka -p "$CERT_PWD"
-sed -i '/ssl.keystore.location=/c\ssl.keystore.location=client.keystore.p12' client.properties
-sed -i '/ssl.truststore.location=/c\ssl.truststore.location=client.truststore.jks' client.properties
+mv client.properties $OUTFILE
+sed -i '/ssl.keystore.location=/c\ssl.keystore.location=client.keystore.p12' $OUTFILE
+sed -i '/ssl.truststore.location=/c\ssl.truststore.location=client.truststore.jks' $OUTFILE
 echo "..certificates done"
 echo
 

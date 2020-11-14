@@ -40,7 +40,7 @@ object Publisher {
     }
     )
 
-    val producerCfg = KafkaProducerConfig(ConfigFactory.parseFileAnySyntax(new File("client.properties")))
+    val producerCfg = KafkaProducerConfig(ConfigFactory.parseFileAnySyntax(new File("kafka.client.properties")))
     implicit val scheduler: Scheduler = monix.execution.Scheduler.global
 
     val producer = KafkaProducerSink[String, String](producerCfg, scheduler)
