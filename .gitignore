@@ -14,5 +14,5 @@
 /service.key
 /client.keystore.p12
 /client.truststore.jks
-/client.properties
+/kafka.client.properties
 /pg.client.properties
