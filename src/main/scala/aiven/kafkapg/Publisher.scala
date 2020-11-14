@@ -36,7 +36,7 @@ object Publisher {
            | "payload": {"host":"$hostName", "cpuLoad":"$l"}
            | }""".stripMargin
       println(msg)
-      new ProducerRecord[String, String]("os-metrics-log", null, msg)
+      new ProducerRecord[String, String]("os_metrics", null, msg)
     }
     )
 
@@ -44,7 +44,6 @@ object Publisher {
     implicit val scheduler: Scheduler = monix.execution.Scheduler.global
 
     val producer = KafkaProducerSink[String, String](producerCfg, scheduler)
-    val doit = records.bufferIntrospective(1024).consumeWith(producer).runToFuture
-    doit
+    records.bufferIntrospective(1024).consumeWith(producer).runToFuture
   }
 }
