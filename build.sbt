@@ -18,3 +18,11 @@ libraryDependencies ++= Seq(
   "com.typesafe.slick" %% "slick-hikaricp" % "3.3.3",
   "org.postgresql" % "postgresql" % "42.2.18" % Runtime
 )
+
+libraryDependencies += "org.apache.kafka" % "connect-api" % "2.6.0"
+libraryDependencies += "org.apache.kafka" % "connect-json" % "2.6.0"
+
+
+libraryDependencies += "org.json4s" %% "json4s-jackson" % "3.7.0-M7"
+libraryDependencies += "io.github.azhur" %% "kafka-serde-json4s" % "0.5.0"
+
