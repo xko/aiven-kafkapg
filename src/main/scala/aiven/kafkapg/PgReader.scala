@@ -13,8 +13,12 @@ import scala.util.{Failure, Success, Using}
 
 object PgReader extends App {
   Using( Database.forConfig("",ConfigFactory.parseFileAnySyntax(new File("pg.client.properties"))) ){ db =>
-    val a = TableQuery[OsMetricsTable].take(50).result.map(_.foreach(println))
-    Await.result(db.run(a), Duration.Inf)
+    val a = TableQuery[OsMetricsTable].sortBy(_.timestamp.desc).take(10).result
+    val res = Await.ready(db.run(a), Duration.Inf).value.get
+    res match {
+      case Success(recs) => println(recs.mkString("\n"))
+      case Failure(err) => err.printStackTrace()
+    }
   }
 }
 

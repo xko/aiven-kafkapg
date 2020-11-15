@@ -3,15 +3,16 @@ package aiven.kafkapg
 import java.io.File
 
 import com.typesafe.config.ConfigFactory
+import io.github.azhur.kafkaserdejson4s.Json4sSupport
 import monix.execution.Scheduler
 import monix.kafka.{KafkaProducerConfig, KafkaProducerSink}
 import monix.reactive.Observable
 import org.apache.kafka.clients.producer.ProducerRecord
+import org.json4s._
 
 import scala.concurrent.Await
 import scala.concurrent.duration._
-import io.github.azhur.kafkaserdejson4s.Json4sSupport
-import org.json4s._
+import scala.util.Failure
 
 
 object KafkaPublisher extends App with Json4sSupport {
@@ -28,6 +29,10 @@ object KafkaPublisher extends App with Json4sSupport {
 
   val producer = KafkaProducerSink[String,OsMetrics](producerCfg, scheduler)
   val doit = records.bufferIntrospective(1024).consumeWith(producer).runToFuture
-  Await.result(doit, Duration.Inf)
+  val res = Await.ready(doit, Duration.Inf).value.get
+  res match {
+    case Failure(err) => err.printStackTrace()
+    case _ =>
+  }
 
 }
