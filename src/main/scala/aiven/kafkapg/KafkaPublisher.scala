@@ -24,7 +24,7 @@ object KafkaPublisher extends App with Json4sSupport {
     new ProducerRecord[String, OsMetrics]("os_metrics", null, _)
   )
 
-  val producerCfg = KafkaProducerConfig(ConfigFactory.parseFileAnySyntax(new File("kafka.client.properties")))
+  val producerCfg = KafkaProducerConfig(ConfigFactory.parseFileAnySyntax(new File(".kafka/client.properties")))
   implicit val scheduler: Scheduler = monix.execution.Scheduler.global
 
   val producer = KafkaProducerSink[String,OsMetrics](producerCfg, scheduler)

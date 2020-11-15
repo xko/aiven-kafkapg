@@ -9,10 +9,5 @@
 /terraform.tfvars
 **/target/
 
-/ca.pem
-/service.cert
-/service.key
-/client.keystore.p12
-/client.truststore.jks
-/kafka.client.properties
-/pg.client.properties
+/.pg/
+/.kafka/

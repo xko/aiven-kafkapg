@@ -12,7 +12,7 @@ import scala.concurrent.duration.Duration
 import scala.util.{Failure, Success, Using}
 
 object PgReader extends App {
-  Using( Database.forConfig("",ConfigFactory.parseFileAnySyntax(new File("pg.client.properties"))) ){ db =>
+  Using( Database.forConfig("",ConfigFactory.parseFileAnySyntax(new File(".pg/client.properties"))) ){ db =>
     val a = TableQuery[OsMetricsTable].sortBy(_.timestamp.desc).take(10).result
     val res = Await.ready(db.run(a), Duration.Inf).value.get
     res match {
