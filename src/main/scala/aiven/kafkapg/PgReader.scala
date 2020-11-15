@@ -1,7 +1,6 @@
 package aiven.kafkapg
 
 import java.io.File
-import java.sql.Timestamp
 import java.time.Instant
 
 import com.typesafe.config.ConfigFactory
@@ -10,7 +9,7 @@ import slick.jdbc.PostgresProfile.api._
 import scala.concurrent.Await
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.Duration
-import scala.util.Using
+import scala.util.{Failure, Success, Using}
 
 object PgReader extends App {
   Using( Database.forConfig("",ConfigFactory.parseFileAnySyntax(new File("pg.client.properties"))) ){ db =>
@@ -20,9 +19,16 @@ object PgReader extends App {
 }
 
 class OsMetricsTable(tag: Tag) extends Table[OsMetrics](tag, "os_metrics") {
-  def hostName = column[String]("hostName")
   def timestamp = column[Instant]("timestamp")
-  def cpuLoad = column[Double]("cpuLoad")
-  def * = (timestamp, hostName, cpuLoad) <> ((OsMetrics.apply _).tupled, OsMetrics.unapply)
+  def cpuLoad = column[Option[Double]]("cpuLoad")
+  def freeMemBytes = column[Option[Long]]("freeMemBytes")
+  def topCPUProcess = column[Option[String]]("topCPUProcess")
+  def topMemProcess = column[Option[String]]("topMemProcess")
+  def netInBytesPerS = column[Option[Long]]("netInBytesPerS")
+  def netOutBytesPerS = column[Option[Long]]("netOutBytesPerS")
+  def hostName = column[String]("hostName")
+  def * = ( timestamp, cpuLoad, freeMemBytes,
+            topCPUProcess, topMemProcess,
+            netInBytesPerS, netOutBytesPerS, hostName ) <> ((OsMetrics.apply _).tupled, OsMetrics.unapply )
 }
 
