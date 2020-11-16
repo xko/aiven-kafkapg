@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+
+SBT_OPTS="-Xms64M -Xmx1G -Xss1M"
+java $SBT_OPTS -jar `dirname $0`/sbt-launch.jar "$@"
