@@ -15,7 +15,7 @@ All the needed services are deployed to Aiven cloud by terraform-based automatio
 - all `init-*` scripts require [aiven CLI](https://github.com/aiven/aiven-client) installed and available on `$PATH` 
 - `init-aiven` additionally requires **[Terraform](https://learn.hashicorp.com/tutorials/terraform/install-cli)**
 - main code is writen in [Scala](https://www.scala-lang.org/) 2.13, which requires **JDK 11** or later.
-  It is [sbt](https://www.scala-sbt.org)-based. Minimal sbt [launcher](bin/sbt) is provided, so only JDK is strictly required, 
+  It is [sbt](https://www.scala-sbt.org)-based. Minimal sbt [launcher](bin/sbt) is provided, so only JDK is required, 
   but you can of course use your own sbt installation
 - all the commands below are to be run from the root of this repo clone 
   
@@ -23,7 +23,9 @@ All the needed services are deployed to Aiven cloud by terraform-based automatio
 **WARNING**: this works on actual cloud infrastructure! Never run against production project!
 
 Run `./init-aiven` and confirm each step. 
-After this is done, further updates to [terraform config](aiven.tf) can be applied with `terraform apply` from the same directory.  
+After this is done, further updates to [terraform config](aiven.tf) can be applied with `terraform apply` 
+from the same clone of this repo. If needed to run from different copy, the file `terraform.tfstate` 
+needs to be moved there.
 
 ##### 2. Kafka client config
 `./init-kafka` will setup everything needed to run Kafka producer. 
