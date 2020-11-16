@@ -33,6 +33,6 @@ class OsMetricsTable(tag: Tag) extends Table[OsMetrics](tag, "os_metrics") {
   def hostName = column[String]("hostName")
   def * = ( timestamp, cpuLoad, freeMemBytes,
             topCPUProcess, topMemProcess,
-            netInBytesPerS, netOutBytesPerS, hostName ) <> ((OsMetrics.apply _).tupled, OsMetrics.unapply )
+            netInBytesPerS, netOutBytesPerS, hostName ).<>( (OsMetrics.apply _).tupled, OsMetrics.unapply )
 }
 
