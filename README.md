@@ -32,7 +32,6 @@ needs to be moved there.
 This can be done independently on different copies of this repo, setting-up as many producers as desired.   
 
 ##### 3. Postgres client config
-
 `./init-postgres` will setup everything needed to run Postgres reader. 
 This can be done independently on different copies of this repo as well.   
 
@@ -41,4 +40,12 @@ This can be done independently on different copies of this repo as well.
 ##### Kafka producer
 Run `./producer` or in sbt shell: `runMain aiven.kafkapg.KafkaPublisher`
 
- 
+##### Postgres reader
+There are couple of `App`s defined in [PgReader.scala](src/main/scala/aiven/kafkapg/PgReader.scala), hoping to illustrate
+potential practical use of such solution. They use (Slick)[https://scala-slick.org/doc/3.3.3/queries.html]'s Scala-native queries.
+All accept host name as an argument, defaulting to all hosts. 
+These can be run with sbt command `runMain`:
+-  `bin/sbt "runMain  aiven.kafkapg.Last10From storm"` will show to see last 10 records from host "storm"
+-  `bin/sbt "runMain  aiven.kafkapg.AvgCPULastHour"` will show average of the CPU load across all hosts during last hour
+   or None if there are no records
+
