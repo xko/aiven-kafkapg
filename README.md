@@ -42,7 +42,7 @@ Run `./producer` or in sbt shell: `runMain aiven.kafkapg.KafkaPublisher`
 
 ##### Postgres reader
 There are couple of `App`s defined in [PgReader.scala](src/main/scala/aiven/kafkapg/PgReader.scala), hoping to illustrate
-potential practical use of such solution. They use (Slick)[https://scala-slick.org/doc/3.3.3/queries.html]'s Scala-native queries.
+potential practical use of such solution. They use [Slick](https://scala-slick.org/doc/3.3.3/queries.html)'s Scala-native queries.
 All accept host name as an argument, defaulting to all hosts. 
 These can be run with sbt command `runMain`:
 -  `bin/sbt "runMain  aiven.kafkapg.Last10From storm"` will show to see last 10 records from host "storm"
