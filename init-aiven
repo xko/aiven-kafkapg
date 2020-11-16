@@ -11,7 +11,8 @@ echo
 
 
 PROJECT=$(avn project details --json | pyjson '[0]["project_name"]')
-echo -n "Will run terraform for currently selected aiven project $PROJECT. " ; ask
+echo "Will run terraform for currently selected aiven project $PROJECT."
+echo -n "Please make sure it doesn't contain any production services or data!" ; ask
 echo
 
 if [[ ! -f "terraform.tfvars" ]]; then
