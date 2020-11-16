@@ -9,7 +9,7 @@ All the needed services are deployed to Aiven cloud by terraform-based automatio
 ### Setting up
 
 ##### 0. Prerequisites and notes
-- An empty project in (Aiven console)[https://console.aiven.io/] with enough credits. Trial should be enough - during 
+- An empty project in [Aiven console](https://console.aiven.io/) with enough credits. Trial should be enough - during 
   development of this demo, I was billed approximately $20 per day
 - all `init-*` scripts require **Python** (either 2 or 3) to be available on `$PATH` as `python`
 - all `init-*` scripts require [aiven CLI](https://github.com/aiven/aiven-client) installed and available on `$PATH` 
