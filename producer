@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+./bin/sbt --error "runMain aiven.kafkapg.KafkaPublisher"

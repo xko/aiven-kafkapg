@@ -37,3 +37,8 @@ This can be done independently on different copies of this repo, setting-up as m
 This can be done independently on different copies of this repo as well.   
 
      
+### Running
+##### Kafka producer
+Run `./producer` or in sbt shell: `runMain aiven.kafkapg.KafkaPublisher`
+
+ 
