@@ -31,8 +31,6 @@ resource "aiven_service" "pg-sink" {
   plan = "startup-4"
   service_name = "pg-sink"
   service_type = "pg"
-  maintenance_window_dow = "monday"
-  maintenance_window_time = "12:00:00"
   pg_user_config {
     pg {
       idle_in_transaction_session_timeout = 900
@@ -53,8 +51,6 @@ resource "aiven_service" "kafka" {
   plan = "startup-2"
   service_name = "kafka"
   service_type = "kafka"
-  maintenance_window_dow = "monday"
-  maintenance_window_time = "10:00:00"
   kafka_user_config {
     kafka_version = "2.6"
     schema_registry = true
@@ -68,8 +64,6 @@ resource "aiven_service" "kafka_connect" {
   plan = "startup-4"
   service_name = "kafka-connect"
   service_type = "kafka_connect"
-  maintenance_window_dow = "monday"
-  maintenance_window_time = "10:00:00"
   kafka_connect_user_config {
     kafka_connect {
       consumer_isolation_level = "read_committed"
