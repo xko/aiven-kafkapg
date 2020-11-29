@@ -52,6 +52,11 @@ resource "aiven_service" "kafka" {
   service_name = "kafka"
   service_type = "kafka"
   kafka_user_config {
+    kafka {
+      auto_create_topics_enable = true
+      default_replication_factor = 2
+      num_partitions = 1
+    }
     kafka_version = "2.6"
     schema_registry = true
     kafka_rest = true
