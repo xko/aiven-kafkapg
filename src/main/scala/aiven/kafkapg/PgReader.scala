@@ -15,17 +15,19 @@ import scala.util.{Failure, Success, Using}
 
 
 object PgReader  {
-  def inDb[R](a:DBIOAction[R, NoStream, Nothing])(onRes: R=>Unit) = Using( Database.forConfig("",ConfigFactory.parseFileAnySyntax(new File(".pg/client.properties"))) ){ db =>
-    val res = Await.ready(db.run(a), Duration.Inf).value.get
-    res match {
-      case Success(r) => onRes(r)
-      case Failure(err) => err.printStackTrace()
+  def inDb[R](a:DBIOAction[R, NoStream, Nothing])(onRes: R=>Unit) =
+    Using( Database.forConfig("",ConfigFactory.parseFileAnySyntax(new File(".pg/client.properties"))) ){ db =>
+      val res = Await.ready(db.run(a), Duration.Inf).value.get
+      res match {
+        case Success(r) => onRes(r)
+        case Failure(err) => err.printStackTrace()
+      }
     }
-  }
 
-  def queryByHostOrAll(host: Option[String]): Query[OsMetricsTable, OsMetrics, Seq] = host.fold(TableQuery[OsMetricsTable].sortBy(_.timestamp.desc)) { host =>
-    TableQuery[OsMetricsTable].filter(_.hostName === host)
-  }
+  def queryByHostOrAll(host: Option[String]): Query[OsMetricsTable, OsMetrics, Seq] =
+    host.fold(TableQuery[OsMetricsTable].sortBy(_.timestamp.desc)) { host =>
+      TableQuery[OsMetricsTable].filter(_.hostName === host)
+    }
 
 }
 
