@@ -26,7 +26,7 @@ class OsMetricsSpec extends AnyFunSpec with Matchers {
     }
 
     it("serializes with json4s") {
-      implicit val fmt: Formats = Codecs.formats + Codecs.withSchema[OsMetrics]
+      implicit val fmt: Formats = KafkaConnectJson.formats + KafkaConnectJson.withSchema[OsMetrics]
       val jv = Extraction.decompose(OsMetrics( Instant.EPOCH, Some(0.9D), Some(512),
                                                Some( "snake"), Some("xonix"), Some(212), Some(4),
                                                "PDP-11" ))

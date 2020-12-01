@@ -22,9 +22,8 @@ object KafkaPublisher extends Json4sSupport {
 
   implicit val scheduler: Scheduler = monix.execution.Scheduler.global
 
-  def publish[T <:AnyRef : Schematic](items: Observable[T], topic:String = defaultTopic,
-                                      config: KafkaProducerConfig = defaultConfig): Task[Unit] = {
-    implicit val fmt: Formats = Codecs.formats + Codecs.withSchema[T]
+  def publish[T <:AnyRef]( items: Observable[T], topic:String = defaultTopic, config: KafkaProducerConfig = defaultConfig )
+                         ( implicit fmt: Formats ): Task[Unit] = {
     implicit val ser: Serialization = org.json4s.jackson.Serialization
 
     val records = items.map( new ProducerRecord[String, T](topic, null, _) )
@@ -32,8 +31,12 @@ object KafkaPublisher extends Json4sSupport {
     records.bufferIntrospective(1024).consumeWith(producer)
   }
 
+  def publish4KConnect[T <:AnyRef : KafkaConnectJson.HasSchema](items: Observable[T], topic:String = defaultTopic,
+                                                                config: KafkaProducerConfig = defaultConfig ): Task[Unit] =
+    publish(items, topic, config)(KafkaConnectJson.formats + KafkaConnectJson.withSchema[T])
+
   def main(args: Array[String]): Unit = {
-    val go = publish(Observable.interval(3.second).scan(OsMetrics.initial)((metrics, _) => metrics.next))
+    val go = publish4KConnect(Observable.interval(3.second).scan(OsMetrics.initial)((metrics, _) => metrics.next))
              .runToFuture
     Await.ready(go, Duration.Inf).value.get.get
   }

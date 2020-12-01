@@ -52,7 +52,7 @@ object OsMetrics {
   def initial: OsMetrics = OsMetrics(Instant.now(), None, Some(freeMemBytes),
                                      Some(topCPUProcess.getName), Some(topMemProcess.getName), None, None)
 
-  implicit val schematic: Schematic[OsMetrics] = new Schematic[OsMetrics] {
+  implicit object HaveSchema extends KafkaConnectJson.HasSchema[OsMetrics] {
     val schema: Schema = SchemaBuilder.struct()
       .field("timestamp", Timestamp.SCHEMA)
       .field("hostName", Schema.STRING_SCHEMA)
