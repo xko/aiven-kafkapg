@@ -1,14 +1,11 @@
 package aiven.kafkapg
 
-import java.net.InetAddress
-import java.time.Instant
-
 import org.json4s._
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should._
 
-import scala.io.Source
-import scala.util.Using
+import java.net.InetAddress
+import java.time.Instant
 
 
 class OsMetricsSpec extends AnyFunSpec with Matchers {
@@ -30,8 +27,9 @@ class OsMetricsSpec extends AnyFunSpec with Matchers {
 
     it("serializes with json4s") {
       implicit val fmt: Formats = Codecs.formats + Codecs.withSchema[OsMetrics]
-      import AutoOption._
-      val jv = Extraction.decompose(OsMetrics( Instant.EPOCH, 0.9D, 512, "snake", "xonix", 212, 4, "PDP-11" ))
+      val jv = Extraction.decompose(OsMetrics( Instant.EPOCH, Some(0.9D), Some(512),
+                                               Some( "snake"), Some("xonix"), Some(212), Some(4),
+                                               "PDP-11" ))
       val schema = jv \ "schema"
       schema \ "type" should be(JString("struct"))
 

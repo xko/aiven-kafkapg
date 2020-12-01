@@ -20,15 +20,15 @@ case class OsMetrics ( timestamp: Instant,
   def next: OsMetrics = {
     val dsec = Duration.between(timestamp, Instant.now).toNanos * 1e-9
     val (newInBytes,newOutBytes) = OsMetrics.netIOBytes
-
-    import AutoOption._
     copy( Instant.now(),
-          OsMetrics.cpu.getSystemCpuLoadBetweenTicks(cpuTicks), OsMetrics.freeMemBytes,
-          OsMetrics.topCPUProcess.getName, OsMetrics.topMemProcess.getName,
-          ((newInBytes - netIOBytes._1) / dsec).toLong, ((newOutBytes - netIOBytes._2) / dsec ).toLong)
+          Some(OsMetrics.cpu.getSystemCpuLoadBetweenTicks(cpuTicks)),
+          Some(OsMetrics.freeMemBytes),
+          Some(OsMetrics.topCPUProcess.getName), Some(OsMetrics.topMemProcess.getName),
+          Some(((newInBytes - netInBytes) / dsec).toLong),
+          Some(((newOutBytes - netOutBytes) / dsec ).toLong))
   }
   private val cpuTicks: Array[Long] = OsMetrics.cpu.getSystemCpuLoadTicks
-  private val netIOBytes = OsMetrics.netIOBytes
+  private val (netInBytes, netOutBytes) = OsMetrics.netIOBytes
 }
 
 object OsMetrics {
