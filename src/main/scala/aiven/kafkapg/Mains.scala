@@ -1,6 +1,6 @@
 package aiven.kafkapg
 
-import aiven.kafkapg.PgReader._
+import aiven.kafkapg.Postgres._
 import monix.eval.Task
 import monix.execution.Scheduler.Implicits.global
 import monix.reactive.Observable

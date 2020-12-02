@@ -7,7 +7,7 @@ import slick.jdbc.PostgresProfile.api._
 import java.io.File
 
 
-object PgReader  {
+object Postgres  {
   val defaultConfig: Config = ConfigFactory.parseFileAnySyntax(new File(".pg/client.properties"))
 
   def inDb[R](config:Config = defaultConfig)(action: Database => Task[R]): Task[R] =
