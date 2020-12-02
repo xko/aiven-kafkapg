@@ -24,39 +24,22 @@ object PgReader  {
       }
     }
 
-  def queryByHostOrAll(host: Option[String]): Query[OsMetricsTable, OsMetrics, Seq] =
-    host.fold(TableQuery[OsMetricsTable].sortBy(_.timestamp.desc)) { host =>
-      TableQuery[OsMetricsTable].filter(_.hostName === host)
-    }
-
 }
 
 import PgReader._
 
 object Last10From extends App {
-  inDb(queryByHostOrAll(args.headOption).take(10).result){ r =>
+  inDb(OsMetricsTable.query(args.headOption).take(10).result){ r =>
     println(r.mkString("\n"))
   }
 }
 
 object AvgCPULastHour extends App {
-  inDb(queryByHostOrAll(args.headOption).filter(_.timestamp > Instant.now().minus(1, ChronoUnit.HOURS))
-         .map(_.cpuLoad).avg.result){ r =>
+  inDb( OsMetricsTable.query(args.headOption)
+        .filter(_.timestamp > Instant.now().minus(1, ChronoUnit.HOURS))
+        .map(_.cpuLoad).avg.result ) { r =>
     println(r)
   }
 }
 
-class OsMetricsTable(tag: Tag) extends Table[OsMetrics](tag, "os_metrics") {
-  def timestamp = column[Instant]("timestamp")
-  def cpuLoad = column[Option[Double]]("cpuLoad")
-  def freeMemBytes = column[Option[Long]]("freeMemBytes")
-  def topCPUProcess = column[Option[String]]("topCPUProcess")
-  def topMemProcess = column[Option[String]]("topMemProcess")
-  def netInBytesPerS = column[Option[Long]]("netInBytesPerS")
-  def netOutBytesPerS = column[Option[Long]]("netOutBytesPerS")
-  def hostName = column[String]("hostName")
-  def * = ( timestamp, cpuLoad, freeMemBytes,
-            topCPUProcess, topMemProcess,
-            netInBytesPerS, netOutBytesPerS, hostName ).<>( (OsMetrics.apply _).tupled, OsMetrics.unapply )
-}
 

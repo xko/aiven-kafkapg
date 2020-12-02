@@ -52,13 +52,22 @@ object OsMetrics {
   def initial: OsMetrics = OsMetrics(Instant.now(), None, Some(freeMemBytes),
                                      Some(topCPUProcess.getName), Some(topMemProcess.getName), None, None)
 
+  val timestamp_ = "timestamp"
+  val hostName_ = "hostName"
+  val cpuLoad_ = "cpuLoad"
+  val freeMemBytes_ = "freeMemBytes"
+  val topCPUProcess_ = "topCPUProcess"
+  val topMemProcess_ = "topMemProcess"
+  val netInBytesPerS_ = "netInBytesPerS"
+  val netOutBytesPerS_ = "netOutBytesPerS"
+
   implicit object HaveSchema extends KafkaConnectJson.HasSchema[OsMetrics] {
     val schema: Schema = SchemaBuilder.struct()
-      .field("timestamp", Timestamp.SCHEMA)
-      .field("hostName", Schema.STRING_SCHEMA)
-      .field("cpuLoad", Schema.OPTIONAL_FLOAT64_SCHEMA).field("freeMemBytes", Schema.OPTIONAL_INT64_SCHEMA)
-      .field("topCPUProcess", Schema.OPTIONAL_STRING_SCHEMA).field("topMemProcess", Schema.OPTIONAL_STRING_SCHEMA)
-      .field("netInBytesPerS", Schema.OPTIONAL_INT64_SCHEMA).field("netOutBytesPerS", Schema.OPTIONAL_INT64_SCHEMA)
+      .field(timestamp_, Timestamp.SCHEMA)
+      .field(hostName_, Schema.STRING_SCHEMA)
+      .field(cpuLoad_, Schema.OPTIONAL_FLOAT64_SCHEMA).field(freeMemBytes_, Schema.OPTIONAL_INT64_SCHEMA)
+      .field(topCPUProcess_, Schema.OPTIONAL_STRING_SCHEMA).field(topMemProcess_, Schema.OPTIONAL_STRING_SCHEMA)
+      .field(netInBytesPerS_, Schema.OPTIONAL_INT64_SCHEMA).field(netOutBytesPerS_, Schema.OPTIONAL_INT64_SCHEMA)
       .build()
   }
 
