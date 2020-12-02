@@ -9,8 +9,6 @@ libraryDependencies += "com.github.oshi" % "oshi-core" % "5.3.4"
 libraryDependencies += "io.monix" %% "monix" % "3.3.0"
 libraryDependencies += "io.monix" %% "monix-kafka-1x" % "1.0.0-RC6"
 
-libraryDependencies += "org.scalatest" %% "scalatest" % "3.2.0" % Test
-
 libraryDependencies += "org.slf4j" % "slf4j-simple" % "1.7.30" % Runtime
 
 libraryDependencies ++= Seq(
@@ -21,8 +19,11 @@ libraryDependencies ++= Seq(
 
 libraryDependencies += "org.apache.kafka" % "connect-api" % "2.6.0"
 libraryDependencies += "org.apache.kafka" % "connect-json" % "2.6.0"
-
+libraryDependencies += "org.apache.kafka" % "kafka-clients" % "2.6.0" % IntegrationTest
 
 libraryDependencies += "org.json4s" %% "json4s-jackson" % "3.7.0-M7"
 libraryDependencies += "io.github.azhur" %% "kafka-serde-json4s" % "0.5.0"
 
+configs(IntegrationTest)
+Defaults.itSettings
+libraryDependencies += "org.scalatest" %% "scalatest" % "3.2.0" % "test,it"
