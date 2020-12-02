@@ -17,7 +17,7 @@ All the needed services are deployed to Aiven cloud by terraform-based automatio
 - main code is writen in [Scala](https://www.scala-lang.org/) 2.13, which requires **JDK 11** or later.
   It is [sbt](https://www.scala-sbt.org)-based. Minimal sbt [launcher](bin/sbt) is provided, so only JDK is required, 
   but you can of course use your own sbt installation
-- all the commands below are to be run from the root of this repo clone 
+- all the shell commands below are to be run from the root of this repo clone 
   
 ##### 1. Aiven infrastructure
 **WARNING**: this works on actual cloud infrastructure! Never run against production project!
@@ -41,11 +41,10 @@ This can be done independently on different copies of this repo as well.
 Run `./producer` or in sbt shell: `runMain aiven.kafkapg.KafkaPublisher`
 
 ##### Postgres reader
-There are couple of `App`s defined in [PgReader.scala](src/main/scala/aiven/kafkapg/Postgres.scala), hoping to illustrate
+There are couple of main classes defined in [Mains.scala](src/main/scala/aiven/kafkapg/Mains.scala), hoping to illustrate
 potential practical use of such solution. They use [Slick](https://scala-slick.org/doc/3.3.3/queries.html)'s Scala-native queries.
-All accept host name as an argument, defaulting to all hosts. 
-These can be run with sbt command `runMain`:
--  `bin/sbt "runMain  aiven.kafkapg.Last10From storm"` will show to see last 10 records from host "storm"
--  `bin/sbt "runMain  aiven.kafkapg.AvgCPULastHour"` will show average of the CPU load across all hosts during last hour
+All accept host name as an argument, defaulting to all hosts. E.g. :
+-  `bin/sbt "runMain  aiven.kafkapg.FromPgLast10Records storm"` will show to see last 10 records from host "storm"
+-  `bin/sbt "runMain  aiven.kafkapg.FromPgAvgCPULastHour"` will show average of the CPU load across all hosts during last hour
    or None if there are no records
 
