@@ -26,20 +26,6 @@ object PgReader  {
 
 }
 
-import PgReader._
 
-object Last10From extends App {
-  inDb(OsMetricsTable.query(args.headOption).take(10).result){ r =>
-    println(r.mkString("\n"))
-  }
-}
-
-object AvgCPULastHour extends App {
-  inDb( OsMetricsTable.query(args.headOption)
-        .filter(_.timestamp > Instant.now().minus(1, ChronoUnit.HOURS))
-        .map(_.cpuLoad).avg.result ) { r =>
-    println(r)
-  }
-}
 
 

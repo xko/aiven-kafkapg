@@ -35,10 +35,4 @@ object KafkaPublisher extends Json4sSupport {
                                                                 config: KafkaProducerConfig = defaultConfig ): Task[Unit] =
     publish(items, topic, config)(KafkaConnectJson.formats + KafkaConnectJson.withSchema[T])
 
-  def main(args: Array[String]): Unit = {
-    val go = publish4KConnect(Observable.interval(3.second).scan(OsMetrics.initial)((metrics, _) => metrics.next))
-             .runToFuture
-    Await.ready(go, Duration.Inf).value.get.get
-  }
-
 }
