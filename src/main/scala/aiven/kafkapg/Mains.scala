@@ -37,6 +37,7 @@ object FromPgAvgCPULastHour extends MainCanWait {
 object ToKafkaConnectEvery3s extends MainCanWait {
   override def go(args: Array[String]): Task[Unit] =
     KafkaPublisher.publish4KConnect(
-      Observable.interval(3.second).scan(OsMetrics.initial)( (metrics, _) => metrics.next )
+      Observable.interval(3.second).scan(OsMetrics.initial)( (metrics, _) => metrics.next ),
+      OsMetrics.kafkaTopic
     )
 }

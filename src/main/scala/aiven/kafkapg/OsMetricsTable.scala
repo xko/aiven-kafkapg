@@ -3,7 +3,7 @@ package aiven.kafkapg
 import java.time.Instant
 import slick.jdbc.PostgresProfile.api._
 
-class OsMetricsTable(tag: Tag) extends Table[OsMetrics](tag, "os_metrics") {
+class OsMetricsTable(tag: Tag) extends Table[OsMetrics](tag, OsMetrics.pgTable) {
   def timestamp = column[Instant](OsMetrics.timestamp_)
   def cpuLoad = column[Option[Double]](OsMetrics.cpuLoad_)
   def freeMemBytes = column[Option[Long]](OsMetrics.freeMemBytes_)

@@ -15,7 +15,7 @@ import scala.util.Random
 class KafkaConnectIntegration extends AnyFlatSpec with Matchers{
   it should "reach postgres" in {
     val metrics = OsMetrics.initial.copy(hostName = "machine-"+Random.nextInt(100000))
-    val publish = KafkaPublisher.publish4KConnect(Observable.eval(metrics)).runToFuture
+    val publish = KafkaPublisher.publish4KConnect(Observable.eval(metrics),OsMetrics.kafkaTopic).runToFuture
     Await.result(publish, 10.seconds)
     Thread.sleep(3.seconds.toMillis)
     val readPg = inDb()(runQ(

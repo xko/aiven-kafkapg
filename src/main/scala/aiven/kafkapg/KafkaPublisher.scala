@@ -18,11 +18,9 @@ object KafkaPublisher extends Json4sSupport {
   lazy val defaultConfig: KafkaProducerConfig =
     KafkaProducerConfig( ConfigFactory.parseFileAnySyntax(new File(".kafka/client.properties")) )
 
-  val defaultTopic = "os_metrics"
-
   implicit val scheduler: Scheduler = monix.execution.Scheduler.global
 
-  def publish[T <:AnyRef]( items: Observable[T], topic:String = defaultTopic, config: KafkaProducerConfig = defaultConfig )
+  def publish[T <:AnyRef]( items: Observable[T], topic:String, config: KafkaProducerConfig = defaultConfig )
                          ( implicit fmt: Formats ): Task[Unit] = {
     implicit val ser: Serialization = org.json4s.jackson.Serialization
 
@@ -31,7 +29,7 @@ object KafkaPublisher extends Json4sSupport {
     records.bufferIntrospective(1024).consumeWith(producer)
   }
 
-  def publish4KConnect[T <:AnyRef : KafkaConnectJson.HasSchema](items: Observable[T], topic:String = defaultTopic,
+  def publish4KConnect[T <:AnyRef : KafkaConnectJson.HasSchema](items: Observable[T], topic:String,
                                                                 config: KafkaProducerConfig = defaultConfig ): Task[Unit] =
     publish(items, topic, config)(KafkaConnectJson.formats + KafkaConnectJson.withSchema[T])
 
