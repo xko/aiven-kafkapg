@@ -31,6 +31,6 @@ object KafkaPublisher extends Json4sSupport {
 
   def publish4KConnect[T <:AnyRef : KafkaConnectJson.HasSchema](items: Observable[T], topic:String,
                                                                 config: KafkaProducerConfig = defaultConfig ): Task[Unit] =
-    publish(items, topic, config)(KafkaConnectJson.formats + KafkaConnectJson.withSchema[T])
+    publish(items, topic, config)(Json.formats + KafkaConnectJson.withSchema[T])
 
 }

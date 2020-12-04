@@ -16,11 +16,6 @@ object KafkaConnectJson {
   private val schemaConv = new JsonConverter()
   schemaConv.configure(Map(ConverterConfig.TYPE_CONFIG -> ConverterType.VALUE.getName).asJava)
 
-  val InstantAsLong = new CustomSerializer[Instant]( _ => (
-    { case ms: JLong => Instant.ofEpochMilli(ms.values)},
-    { case ms: Instant => JLong(ms.toEpochMilli) }
-  ))
-
   trait HasSchema[T] { def schema: Schema }
 
   def withSchema[T: HasSchema]: Serializer[T] = new Serializer[T] {
@@ -32,9 +27,7 @@ object KafkaConnectJson {
 
     def serialize(implicit format: Formats): PartialFunction[Any, JValue] = {
       case v  => ("schema" -> JsonMethods.fromJsonNode(schemaConv.asJsonSchema(schema))) ~
-                 ("payload" -> Extraction.decompose(v)(formats - this))
+                 ("payload" -> Extraction.decompose(v)(format - this))
     }
   }
-
-  val formats: Formats = DefaultFormats + InstantAsLong
 }
