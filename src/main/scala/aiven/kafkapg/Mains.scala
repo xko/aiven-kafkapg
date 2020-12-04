@@ -21,14 +21,14 @@ trait MainCanWait { //TODO: Why didn't monix.eval.TaskApp work?
 
 object FromPgLast10Records extends MainCanWait {
   override def go(args: Array[String]): Task[Unit] =
-    inDb()(runQ( OsMetricsTable.query(args.headOption).take(10).result ))
+    inDb()(runQ(OsMetricsTable.queryBy(args.headOption).take(10).result))
       .map(_.mkString("\n")).map(println)
 }
 
 object FromPgAvgCPULastHour extends MainCanWait {
   override def go(args: Array[String]): Task[Unit] =
     inDb()(runQ(
-      OsMetricsTable.query(args.headOption)
+      OsMetricsTable.queryBy(args.headOption)
                     .filter(_.timestamp > Instant.now().minus(1, ChronoUnit.HOURS))
                     .map(_.cpuLoad).avg.result
     )) .map(println)

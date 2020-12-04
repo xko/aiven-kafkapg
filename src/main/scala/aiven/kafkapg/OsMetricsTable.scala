@@ -19,8 +19,10 @@ class OsMetricsTable(tag: Tag) extends Table[OsMetrics](tag, OsMetrics.pgTable) 
 }
 
 object OsMetricsTable {
-  def query(host: Option[String]): Query[OsMetricsTable, OsMetrics, Seq] = {
-    host.foldLeft(TableQuery[OsMetricsTable].sortBy(_.timestamp.desc)){ (q, host) =>
+  lazy val query = TableQuery[OsMetricsTable]
+
+  def queryBy(host: Option[String]): Query[OsMetricsTable, OsMetrics, Seq] = {
+    host.foldLeft(query.sortBy(_.timestamp.desc)){ (q, host) =>
       q.filter(_.hostName === host)
     }
   }

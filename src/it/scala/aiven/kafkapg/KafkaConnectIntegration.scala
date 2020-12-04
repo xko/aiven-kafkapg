@@ -18,7 +18,7 @@ class KafkaConnectIntegration extends AnyFlatSpec with Matchers with Eventually 
     val metrics = OsMetrics.initial.copy(hostName = "machine-" + Random.nextInt(100000))
     val publish = KafkaPublisher.publish4KConnect(Observable.eval(metrics), OsMetrics.kafkaTopic)
     Await.result(publish.runToFuture, 10.seconds)
-    val readPg = inDb()(runQ( OsMetricsTable.query(None).filter(_.hostName === metrics.hostName).result ))
+    val readPg = inDb()(runQ( OsMetricsTable.queryBy(None).filter(_.hostName === metrics.hostName).result ))
     eventually {
       val res = Await.result(readPg.runToFuture, 10.seconds)
       val expected = metrics.copy(timestamp = metrics.timestamp.truncatedTo(ChronoUnit.MILLIS)) //pg doesn't keep nanos
