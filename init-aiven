@@ -3,42 +3,38 @@ set -e
 PWD=$(dirname "$0")
 . "$PWD/bin/functions.sh"
 
-echo We will init/update aiven cloud infrastructure, needed to run this demo. For that we need:
-prerequisites
-echo - terraform installed and available on \$PATH, see https://learn.hashicorp.com/tutorials/terraform/install-cli
-ask
+TFVARS="terraform.tfvars"
+TFOPTIONS="-auto-approve"
+
+echo Will init/update aiven cloud infrastructure, needed to run this demo..
 echo
+(prerequisites && login) || ( echo ..failed. ; exit 1 )
 
 
-PROJECT=$(avn project details --json | pyjson '[0]["project_name"]')
-echo "Will run terraform for currently selected aiven project $PROJECT."
-echo -n "Please make sure it doesn't contain any production services or data! " ; ask
-echo
-
-if [[ ! -f "terraform.tfvars" ]]; then
+if [[ -f "$TFVARS" ]]; then
+  . $TFVARS
+  avn project switch $aiven_project_name
+else
+  aiven_project_name=$(avn project details --json | pyjson '[0]["project_name"]')
   echo -n "Will now create an access token 'automation' in your aiven account to authorize terraform. " ; ask
-  FULL_TOKEN=$(avn user access-token create --description automation --json | pyjson "[0]['full_token']")
-  echo "aiven_api_token=\"$FULL_TOKEN\"" > terraform.tfvars
-  echo "aiven_project_name=\"$PROJECT\"" >> terraform.tfvars
-  echo ..token and project are written to terraform.tfvars
+  aiven_api_token=$(avn user access-token create --description automation --json | pyjson "[0]['full_token']")
+  echo "aiven_api_token=\"$aiven_api_token\"" > $TFVARS
+  echo "aiven_project_name=\"$aiven_project_name\"" >> $TFVARS
+  echo " ...token and project are written to $TFVARS"
   echo
 fi
 
-
-echo "Will now initialize terraform and apply aiven.tf"
-echo -n "WARNING: Terraform will destroy all the services and resources not specified in aiven.tf. " ; ask
+echo "Will now initialize terraform and apply aiven.tf in project $aiven_project_name"
+echo -n "WARNING!! Terraform will destroy all the services and resources not specified in aiven.tf! " ; ask
 
 terraform init
-terraform import aiven_project.xko-aiven-kafkapg "$PROJECT" 2>/dev/null || :
-terraform apply || TRERR=", there where errors. Here are some ideas:"
-echo -n "..terraform done" ; echo $TRERR
-if [ -n "$TRERR" ] ; then
-  echo "- 'Error: error waiting for Aiven Kafka topic to be ACTIVE...' might be fixed by creating the missing topic in aiven web console"
-  echo "- 'Error: 409: ... Service name is already in use in this project' means inconsistent terraform state"
-  echo "  might be fixed by running this script against empty aiven project or using 'terraform import' to sync the state"
-  echo "- 'Error: 5XX..' might be fixed bt re-running 'terraform apply'"
-  echo "- 'Error: 401: ... Missing (expired) db token' can be fixed by deleting terraform.tfvars and re-running this script"
-  ask
+terraform import aiven_project.xko-aiven-kafkapg "$aiven_project_name" 2>/dev/null || :
+terraform apply $TFOPTIONS || TFERR=", there where errors."
+echo
+echo -n "...terraform done" ; echo $TFERR
+if [ -n "$TFERR" ] ; then
+  echo -n "Will retry one more time. " ; ask
+  terraform apply $TFOPTIONS || echo "Still errors.. Please check terraform output above for clues"
 fi
 echo
 echo ..init-aiven done

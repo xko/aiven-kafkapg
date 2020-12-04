@@ -3,20 +3,26 @@ set -e
 PWD=$(dirname "$0")
 . "$PWD/bin/functions.sh"
 
-echo We will download postgres client certificate from aiven and generate client config. For that we need:
-prerequisites
-ask
+echo Will download postgres client certificate from aiven and generate client config..
 echo
+(prerequisites && login) || ( echo ..failed. ; exit 1 )
 
 OUTDIR=$PWD/.pg
 OUTFILE=$OUTDIR/client.properties
 
-echo -n "Will now download ca.pem from aiven. " ; ask
-avn service user-creds-download --username avnadmin pg-sink -d $OUTDIR || :
-echo ".. ca.pem done. ('ERROR...does not have certificate and key' can be ignored)"
-echo
+if [ -f "$OUTDIR/ca.pem" ]; then
+  echo -n "$OUTDIR/ca.pem already exists, will overwrite. " ; ask
+  rm -f "$OUTDIR/ca.pem"
+fi
+OOUT=$(avn service user-creds-download --username avnadmin pg-sink -d $OUTDIR 2>&1) || :
+if [ -f "$OUTDIR/ca.pem" ]; then
+  echo ".. ca.pem done"
+else
+  echo $OOUT
+  echo ..failed. ; exit 1
+fi
 
-echo -n "Will generate $OUTFILE. " ; ask
+echo
 PG_SERVICE=$(avn service get pg-sink --json)
 
 host=$(echo "$PG_SERVICE" | pyjson '["service_uri_params"]["host"]')
@@ -26,10 +32,9 @@ user=$(echo "$PG_SERVICE" | pyjson '["service_uri_params"]["user"]')
 url="jdbc:postgresql://${host}:${port}/os-metrics-sink?ssl=true&sslrootcert=$OUTDIR/ca.pem&sslmode=verify-ca"
 
 
-echo -n "Will use the url $url " ; ask
 echo "url=$url" > $OUTFILE
 echo "user=$user" >> $OUTFILE
 echo "password=$password" >> $OUTFILE
 echo "driver=org.postgresql.Driver" >> $OUTFILE
-echo
-echo "..init-postgres done"
+echo "..$OUTFILE generated"
+echo "..init-postgres done."

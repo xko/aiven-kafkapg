@@ -7,9 +7,25 @@ function pyjson() {
 }
 
 function prerequisites() {
-  [ -z "$PREREQ_DONE" ] || return 0
-  echo - python installed and available on \$PATH as \'python\'
-  echo - aiven CLI installed and available on \$PATH, see https://github.com/aiven/aiven-client
-  echo - user logged in, use \'avn user login\'
-  PREREQ_DONE=true
+  local r=0
+  if ! which python >/dev/null 2>&1; then
+    echo "No python - need either 2.x or 3.x available on \$PATH as 'python'"
+    r=1
+  fi
+  if [ -n "$TFVARS" ] && ! which terraform >/dev/null 2>&1; then
+    echo "No terraform on \$PATH, see https://learn.hashicorp.com/tutorials/terraform/install-cli"
+    r=1
+  fi
+  if ! which avn >/dev/null 2>&1; then
+    echo "No aiven CLI on \$PATH, see https://github.com/aiven/aiven-client"
+    r=1
+  fi
+  return $r
+}
+
+function login() {
+   if ! avn user info >/dev/null; then
+    avn user login || return 1
+    echo
+  fi
 }

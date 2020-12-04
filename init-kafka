@@ -2,22 +2,21 @@
 set -e
 PWD=$(dirname "$0")
 . "$PWD/bin/functions.sh"
+CERT_PWD=batmanno
 
-echo We will download kafka certificates from aiven and generate client config. For that we need:
-prerequisites
-ask
+echo Will download kafka certificates from aiven and generate client config..
 echo
+(prerequisites && login) || ( echo ..failed. ; exit 1 )
 
 OUTDIR=$PWD/.kafka
 OUTFILE=$OUTDIR/client.properties
 
 if [ -f "$OUTDIR/client.truststore.jks" ] || [ -f client.keystore.p12 ]; then
-  echo -n "Either client.truststore.jks or client.keystore.p12 already exist, will overwrite. " ; ask
+  echo -n "Either client.truststore.jks or client.keystore.p12 already exist in $OUTDIR, will overwrite. " ; ask
   rm -f "$OUTDIR/client.truststore.jks" "$OUTDIR/client.keystore.p12"
+  echo
 fi
-echo -n "Create the new password for client.truststore.jks and client.keystore.p12 (6+ chars):"
-read -r CERT_PWD
-avn service user-kafka-java-creds --username avnadmin kafka -p "$CERT_PWD" -d "$OUTDIR"
+avn service user-kafka-java-creds --username avnadmin kafka -p "$CERT_PWD" -d "$OUTDIR" >/dev/null
 sed -i "/ssl.keystore.location=/c\ssl.keystore.location=$OUTDIR/client.keystore.p12" "$OUTFILE"
 sed -i "/ssl.truststore.location=/c\ssl.truststore.location=$OUTDIR/client.truststore.jks" "$OUTFILE"
 echo
