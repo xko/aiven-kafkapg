@@ -1,6 +1,7 @@
 /.idea
 /.vscode
 /.metals
+/.bsp
 
 /.terraform
 /.terraform.tfstate.lock.info

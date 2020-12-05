@@ -6,12 +6,12 @@ import org.json4s.Formats
 import org.scalatest.flatspec.AsyncFlatSpec
 import org.scalatest.matchers.should.Matchers
 import scala.concurrent.duration._
+import java.time.temporal.ChronoUnit
+import slick.jdbc.PostgresProfile.api._
 
 import scala.util.Random
 
 class PostgresIntegration extends AsyncFlatSpec with Matchers {
-  import slick.jdbc.PostgresProfile.api._
-  import java.time.temporal.ChronoUnit
 
   it should "store to db once" in {
     implicit val formats: Formats = Json.formats

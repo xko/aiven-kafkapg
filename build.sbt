@@ -27,3 +27,5 @@ libraryDependencies += "io.github.azhur" %% "kafka-serde-json4s" % "0.5.0"
 configs(IntegrationTest)
 Defaults.itSettings
 libraryDependencies += "org.scalatest" %% "scalatest" % "3.2.0" % "test,it"
+IntegrationTest / parallelExecution := false
+//IntegrationTest / fork := true
