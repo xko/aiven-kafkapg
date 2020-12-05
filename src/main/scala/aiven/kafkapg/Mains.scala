@@ -13,7 +13,12 @@ import scala.concurrent.duration._
 
 trait MainCanWait { //TODO: Why didn't monix.eval.TaskApp work?
   def main(args: Array[String]): Unit = {
-    Await.result(go(args).runToFuture, Duration.Inf)
+    val future = go(args).runToFuture
+    try {
+      Await.result(future, Duration.Inf)
+    } finally {
+      if(!future.isCompleted) future.cancel()
+    }
   }
 
   def go(args: Array[String]): Task[Unit]
