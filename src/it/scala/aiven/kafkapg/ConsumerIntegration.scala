@@ -22,11 +22,9 @@ class ConsumerIntegration extends AsyncFlatSpec  with Matchers  {
     val order = TestOrder("water chip", Random.nextLong(100000))
     val publish = KafkaPublisher.publish(Observable.eval(order),topic)
     val consume = KafkaConsumer.consume[TestOrder](topic, "delivery").firstL
-    publish.runToFuture.flatMap { _ =>
-      consume.runToFuture
-    } map { res =>
-        res should === (order)
-    } flatMap {_ =>
+    publish.flatMap(_ => consume).map { res =>
+      res should === (order)
+    }.timeout(10.seconds).runToFuture.flatMap{_=>
       recoverToSucceededIf[TimeoutException]( consume.timeout(10.seconds).runToFuture )
     }
   }
@@ -35,11 +33,11 @@ class ConsumerIntegration extends AsyncFlatSpec  with Matchers  {
     implicit val formats: Formats = DefaultFormats
     val topic = "test_orders"
     val joe = TestPerson("Joe", "Doe")
-    val publish = KafkaPublisher.publish(Observable.eval(joe),topic)
-    val consumeWrong = KafkaConsumer.consume[TestOrder](topic, "delivery").firstL
-    val consumeRight = KafkaConsumer.consume[TestPerson](topic, "delivery").firstL
+    val publish = KafkaPublisher.publish(Observable.eval(joe),topic).timeout(10.seconds)
+    val consumeWrong = KafkaConsumer.consume[TestOrder](topic, "delivery").firstL.timeout(10.seconds)
+    val consumeRight = KafkaConsumer.consume[TestPerson](topic, "delivery").firstL.timeout(10.seconds)
     publish.runToFuture.flatMap { _ =>
-      recoverToSucceededIf[SerializationException](consumeWrong.runToFuture)
+      recoverToSucceededIf[SerializationException]( consumeWrong.runToFuture )
     } flatMap { _ =>
       consumeRight.runToFuture
     } map { res =>
