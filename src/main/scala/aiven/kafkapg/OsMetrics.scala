@@ -71,7 +71,8 @@ object OsMetrics {
       .build()
   }
 
-  val kafkaTopic: String = "os_metrics"
-  val pgTable: String = kafkaTopic
+  val topic4KafkaConnect: String = "os_metrics"
+  val topicBareJson: String = "os_metrics_bare"
+  val pgTable: String = "os_metrics"
 }
 

@@ -43,6 +43,15 @@ object ToKafkaConnectEvery3s extends MainCanWait {
   override def go(args: Array[String]): Task[Unit] =
     KafkaPublisher.publish4KConnect(
       Observable.interval(3.second).scan(OsMetrics.initial)( (metrics, _) => metrics.next ),
-      OsMetrics.kafkaTopic
+      OsMetrics.topic4KafkaConnect
+    )
+}
+
+object ToKafkaEvery3s extends MainCanWait {
+  implicit val fmt = Json.formats
+  override def go(args: Array[String]): Task[Unit] =
+    KafkaPublisher.publish(
+      Observable.interval(3.second).scan(OsMetrics.initial)( (metrics, _) => metrics.next ),
+      OsMetrics.topicBareJson
     )
 }
