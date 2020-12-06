@@ -17,28 +17,35 @@ object KafkaConsumer {
     KafkaConsumerConfig(ConfigFactory.parseFileAnySyntax(new File(".kafka/client.properties")))
                        .copy( autoOffsetReset = Earliest, observableSeekOnStart = Beginning )
 
-  case class Message[+V](v: V, raw: CommittableMessage[String,String]){
-    def wrapTry[T](t: Task[T]): Task[Message[Try[T]]] = t.materialize.map(copy(_))
-    def mapTry[T](f: V => Task[T] ): Task[Message[Try[T]]] = wrapTry(f(v))
+  case class Message[+V](value: V, raw: CommittableMessage[String,String]){
+    def to[T](v:T): Message[T] = copy(value = v)
   }
 
   def commit[V](msg: Message[V]):Task[V] = {
-    msg.raw.committableOffset.commitSync().map(_=>msg.v)
+    msg.raw.committableOffset.commitSync().map(_=>msg.value)
   }
 
-  def fragile[V](src: Observable[Message[Try[V]]])(implicit fmt: Formats, ser: Serialization): Observable[Message[V]] = src.mapEval {
+  def fragile[V](src: Observable[Message[Task[V]]]): Observable[Message[V]] = src.mapEval  { m =>
+    m.value.materialize.map(d => m.to(d))
+  } mapEval {
     case Message(Success(v), raw) => Task(Message(v,raw))
-    case Message(Failure(e),_) => Task.raiseError(e)
+    case Message(Failure(e),_)    => Task.raiseError(e)
   }
 
-  def careless[V](src: Observable[Message[Try[V]]])(implicit fmt: Formats, ser: Serialization): Observable[Message[V]] = src.collect {
+  def careless[V](src: Observable[Message[Task[V]]]): Observable[Message[V]] = src.mapEval { m =>
+    m.value.materialize.map(d => m.to(d))
+  }.collect {
     case Message(Success(v), raw) => Message(v,raw)
   }
 
+  def insistent[V](src: Observable[Message[Task[V]]]): Observable[Message[V]] = src.mapEval { m =>
+    m.value.onErrorRestart(10).map(m.to)
+  }
+
   def json[V:Manifest](topic:String, groupId:String, config:KafkaConsumerConfig = defaultConfig )
-                      (implicit fmt: Formats, ser: Serialization): Observable[Message[Try[V]]] = {
+                      (implicit fmt: Formats, ser: Serialization): Observable[Message[Task[V]]] = {
     KafkaConsumerObservable.manualCommit[String, String](config.copy(groupId=groupId), List(topic)).map { msg =>
-      Message(Try( parse(msg.record.value).extract[V] ),msg)
+      Message(Task( parse(msg.record.value).extract[V] ),msg)
     }
   }
 
