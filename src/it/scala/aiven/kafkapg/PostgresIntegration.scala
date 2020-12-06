@@ -2,30 +2,51 @@ package aiven.kafkapg
 
 import monix.execution.Scheduler.Implicits.global
 import monix.reactive.Observable
-import org.json4s.Formats
+import org.json4s.{DefaultFormats, Formats, Serialization}
 import org.scalatest.flatspec.AsyncFlatSpec
 import org.scalatest.matchers.should.Matchers
+
 import scala.concurrent.duration._
 import java.time.temporal.ChronoUnit
 import slick.jdbc.PostgresProfile.api._
+import KafkaConsumer._
+import monix.eval.Task
+import org.apache.kafka.clients.admin.{AdminClient, NewTopic}
+import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach}
+import scala.jdk.CollectionConverters._
 
-import scala.util.Random
+import scala.util.{Random, Try}
 
-class PostgresIntegration extends AsyncFlatSpec with Matchers {
+class PostgresIntegration extends AsyncFlatSpec with BeforeAndAfterEach with BeforeAndAfterAll with Matchers {
+  implicit val ser: Serialization = org.json4s.jackson.Serialization
+  implicit val formats: Formats = DefaultFormats
+
+  val admin: AdminClient = AdminClient.create(KafkaConsumer.defaultConfig.toJavaMap)
+
+  override protected def beforeEach(): Unit = Try {
+      admin.deleteTopics(List(topic).asJava).all().get(10, SECONDS)
+      admin.createTopics(List(new NewTopic(topic, 1, 2.toShort)).asJava).all().get(10, SECONDS)
+  }
+
+  override protected def afterAll(): Unit =  admin.close()
+
+  val topic = "test_pg"
 
   it should "store to db once" in {
     implicit val formats: Formats = Json.formats
     val pg = Postgres()
-    val topic = "test_pg"
     val metrics = OsMetrics.initial.copy(hostName = "apparat-" + Random.nextInt(100000))
     val expected = metrics.copy(timestamp = metrics.timestamp.truncatedTo(ChronoUnit.MILLIS)) //pg doesn't keep nanos
     val toKafka = KafkaPublisher.publish(Observable.eval(metrics),topic)
-    val kafkaToPg = pg.streamRun(KafkaConsumer.consume[OsMetrics](topic, "pg_writer")){ v =>
-      OsMetricsTable.query += v
-    }
-    val fromPg = pg.run( OsMetricsTable.queryBy(Some(metrics.hostName)).result ).map(_.head)
-    toKafka.flatMap(_ => kafkaToPg.take(1).firstL).flatMap(_ => fromPg).map { res =>
-      res should === (expected)
-    }.timeout(10.seconds).runToFuture
+    val kafkaToPg  = fragile {
+      pg.stream { db =>
+        fragile(json[OsMetrics](topic, "pg_writer"))
+          .mapEval( _.mapTry(v => Task.deferFuture(db.run(OsMetricsTable.query += v)))  )
+      }
+    }.mapEval(commit)
+    val fromPg = pg.run( OsMetricsTable.queryBy(Some(metrics.hostName)).result )
+    toKafka.flatMap(_ => kafkaToPg.firstL).flatMap(_ => fromPg).map { res =>
+      res.head should === (expected)
+    }.timeout(20.seconds).runToFuture
   }
 }
