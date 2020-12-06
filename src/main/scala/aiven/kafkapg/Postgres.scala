@@ -11,21 +11,20 @@ import java.io.File
 
 object Postgres  {
   val defaultConfig: Config = ConfigFactory.parseFileAnySyntax(new File(".pg/client.properties"))
+
+  def inDb[R](config: Config)(action:Postgres  => Observable[R]): Observable[R] =
+    Observable.eval(Database.forConfig("",config))
+              .bracket(db => action(Postgres(db)))( db => Task(db.close()) )
+
+  def inDb[R](action:Postgres  => Observable[R]): Observable[R] = inDb(defaultConfig)(action)
+
 }
 
-case class Postgres(config: Config = defaultConfig)  {
-  def db = Database.forConfig("",config)
+case class Postgres private(db: Database)  {
 
-  def task[R](action: Database => Task[R]): Task[R] = Task(db).bracket(action)(db => Task(db.close()))
+  def task[R](q:DBIO[R]):Task[R] = Task.deferFuture(db.run(q))
 
-  def run[R](q:DBIO[R]):Task[R] = task(db => Task.deferFuture(db.run(q)))
-
-  def stream[R](action: Database => Observable[R]): Observable[R] =
-    Observable.eval(db).bracket(action)( db => Task(db.close()) )
-
-  def streamRun[S,R](source: Observable[S])(action: S => DBIO[R]): Observable[R] = stream { db =>
-    source.mapEval( src => Task.deferFuture(db.run(action(src))) )
-  }
+  def stream[R](qs:DBIO[R]*): Observable[R] = Observable.fromIterable(qs).mapEval(task)
 
 }
 

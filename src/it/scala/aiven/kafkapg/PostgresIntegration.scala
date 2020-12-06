@@ -14,6 +14,7 @@ import monix.eval.Task
 import org.apache.kafka.clients.admin.{AdminClient, NewTopic}
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach}
 import scala.jdk.CollectionConverters._
+import Postgres._
 
 import scala.util.{Random, Try}
 
@@ -34,17 +35,16 @@ class PostgresIntegration extends AsyncFlatSpec with BeforeAndAfterEach with Bef
 
   it should "store to db once" in {
     implicit val formats: Formats = Json.formats
-    val pg = Postgres()
     val metrics = OsMetrics.initial.copy(hostName = "apparat-" + Random.nextInt(100000))
     val expected = metrics.copy(timestamp = metrics.timestamp.truncatedTo(ChronoUnit.MILLIS)) //pg doesn't keep nanos
     val toKafka = KafkaPublisher.publish(Observable.eval(metrics),topic)
     val kafkaToPg  = fragile {
-      pg.stream { db =>
+      inDb{ pg =>
         fragile(json[OsMetrics](topic, "pg_writer"))
-          .mapEval( _.mapTry(v => Task.deferFuture(db.run(OsMetricsTable.query += v)))  )
+          .mapEval(_.mapTry(v => pg.task(OsMetricsTable.query += v)))
       }
     }.mapEval(commit)
-    val fromPg = pg.run( OsMetricsTable.queryBy(Some(metrics.hostName)).result )
+    val fromPg = inDb( _.stream(OsMetricsTable.queryBy(Some(metrics.hostName)).result) ).firstL
     toKafka.flatMap(_ => kafkaToPg.firstL).flatMap(_ => fromPg).map { res =>
       res.head should === (expected)
     }.timeout(20.seconds).runToFuture
