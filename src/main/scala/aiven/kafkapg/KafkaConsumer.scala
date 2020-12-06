@@ -35,7 +35,7 @@ object KafkaConsumer {
     case Message(Success(v), raw) => Message(v,raw)
   }
 
-  def json[V:Manifest](topic:String, groupId:String, config:KafkaConsumerConfig = KafkaConsumer.defaultConfig )
+  def json[V:Manifest](topic:String, groupId:String, config:KafkaConsumerConfig = defaultConfig )
                       (implicit fmt: Formats, ser: Serialization): Observable[Message[Try[V]]] = {
     KafkaConsumerObservable.manualCommit[String, String](config.copy(groupId=groupId), List(topic)).map { msg =>
       Message(Try( parse(msg.record.value).extract[V] ),msg)
