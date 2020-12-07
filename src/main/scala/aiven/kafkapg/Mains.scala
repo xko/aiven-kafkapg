@@ -6,7 +6,7 @@ import monix.reactive.Observable
 import org.json4s.{Formats, Serialization}
 import slick.jdbc.PostgresProfile.api._
 import Postgres._
-import aiven.kafkapg.KafkaConsumer.{careless, commit, fragile, insistent, json}
+import aiven.kafkapg.KafkaConsumer._
 
 import java.time.Instant
 import java.time.temporal.ChronoUnit
@@ -73,7 +73,7 @@ object FromKafkaToConsole extends MainCanWait {
   implicit val ser: Serialization = org.json4s.jackson.Serialization
   override def go(args: Array[String]): Task[Unit] = {
     val groupId = "console"+Random.nextLong(100000) // can run many of these
-    careless(json[OsMetrics](OsMetrics.topicBareJson,groupId)).mapEval(commit).dump("Received:").completedL
+    carelessHonest(json[OsMetrics](OsMetrics.topicBareJson,groupId)).mapEval(commit).dump("Received:").completedL
   }
 }
 

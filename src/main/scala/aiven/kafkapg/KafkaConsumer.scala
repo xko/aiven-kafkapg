@@ -10,6 +10,7 @@ import org.json4s._
 import org.json4s.jackson.JsonMethods._
 
 import java.io.File
+import scala.util.chaining.scalaUtilChainingOps
 import scala.util.{Failure, Success, Try}
 
 object KafkaConsumer {
@@ -35,6 +36,14 @@ object KafkaConsumer {
   def careless[V](src: Observable[Message[Task[V]]]): Observable[Message[V]] = src.mapEval { m =>
     m.value.materialize.map(d => m.to(d))
   }.collect {
+    case Message(Success(v), raw) => Message(v,raw)
+  }
+
+  def carelessHonest[V](src: Observable[Message[Task[V]]]): Observable[Message[V]] = src.mapEval { m =>
+    m.value.materialize.map(d => m.to(d))
+  }.map { m =>
+    m.tap(_.value.failed.foreach(_ =>println(s"Dropped at ${m.raw.record.offset()}: ${m.raw.record.value()}") ))
+  } collect {
     case Message(Success(v), raw) => Message(v,raw)
   }
 
