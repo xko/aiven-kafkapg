@@ -46,7 +46,7 @@ They can be started with `bin/sbt it:test`, or individually - `bin/sbt "it:testO
 Several main classes defined in [Mains.scala](src/main/scala/aiven/kafkapg/Mains.scala). 
 The sbt command `run` will let you choose the one to run. Or use `bin/sbt "runMain ..."` to start individually 
 - `aiven.kafkapg.ToKafkaConnectEvery3s` sends messages to the topic, read by Kafka-connect service. 
-  In this case consumer in not needed - data end up in postgress automaticall
+  In this case consumer in not needed - data end up in postgres automatically
 - `aiven.kafkapg.ToKafkaEvery3s` sends messages to the topic, read by one of the consumers below
 - `aiven.kafkapg.NoiseToKafkaEvery5s`- same as above, but sends noisy messages to test consumer's error-tolerance
 - `aiven.kafkapg.FromKafkaToConsole` consumes messages and prints to console, ignoring the errors
