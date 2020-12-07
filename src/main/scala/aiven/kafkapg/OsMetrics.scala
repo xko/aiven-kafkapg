@@ -74,5 +74,6 @@ object OsMetrics {
   val topic4KafkaConnect: String = "os_metrics"
   val topicBareJson: String = "os_metrics_bare"
   val pgTable: String = "os_metrics"
+  val pgSinkGroupId = "os_metrics_to_pg"
 }
 

@@ -6,7 +6,7 @@ import monix.reactive.Observable
 import org.json4s.{Formats, Serialization}
 import slick.jdbc.PostgresProfile.api._
 import Postgres._
-import aiven.kafkapg.KafkaConsumer.{careless, commit, json}
+import aiven.kafkapg.KafkaConsumer.{careless, commit, fragile, insistent, json}
 
 import java.time.Instant
 import java.time.temporal.ChronoUnit
@@ -59,10 +59,24 @@ object ToKafkaEvery3s extends MainCanWait {
 }
 
 object FromKafkaToConsole extends MainCanWait {
+  implicit val fmt: Formats = Json.formats
+  implicit val ser: Serialization = org.json4s.jackson.Serialization
   override def go(args: Array[String]): Task[Unit] = {
-    implicit val fmt: Formats = Json.formats
-    implicit val ser: Serialization = org.json4s.jackson.Serialization
-    val groupId = "console"+Random.nextLong(100000)
+    val groupId = "console"+Random.nextLong(100000) // can run many of these
     careless(json[OsMetrics](OsMetrics.topicBareJson,groupId)).mapEval(commit).foreachL(println)
+  }
+}
+
+object FromKafkaToPg extends MainCanWait {
+  implicit val fmt: Formats = Json.formats
+  implicit val ser: Serialization = org.json4s.jackson.Serialization
+  override def go(args: Array[String]): Task[Unit] = {
+    insistent { inDb { pg => // will retry on pg errors
+      fragile { // deserialization will fail fast
+        json[OsMetrics](OsMetrics.topicBareJson, OsMetrics.pgSinkGroupId)
+      }.map { m =>
+        m.to(pg.task(OsMetricsTable.query += m.value))
+      }
+    }}.mapEval(commit).foreachL(println)
   }
 }
