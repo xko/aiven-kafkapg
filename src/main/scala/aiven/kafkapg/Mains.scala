@@ -3,14 +3,16 @@ package aiven.kafkapg
 import monix.eval.Task
 import monix.execution.Scheduler.Implicits.global
 import monix.reactive.Observable
-import org.json4s.Formats
+import org.json4s.{Formats, Serialization}
 import slick.jdbc.PostgresProfile.api._
 import Postgres._
+import aiven.kafkapg.KafkaConsumer.{careless, commit, json}
 
 import java.time.Instant
 import java.time.temporal.ChronoUnit
 import scala.concurrent.Await
 import scala.concurrent.duration._
+import scala.util.Random
 
 trait MainCanWait { //TODO: Why didn't monix.eval.TaskApp work?
   def main(args: Array[String]): Unit = {
@@ -54,4 +56,13 @@ object ToKafkaEvery3s extends MainCanWait {
       Observable.interval(3.second).scan(OsMetrics.initial)( (metrics, _) => metrics.next ),
       OsMetrics.topicBareJson
     )
+}
+
+object FromKafkaToConsole extends MainCanWait {
+  override def go(args: Array[String]): Task[Unit] = {
+    implicit val fmt: Formats = Json.formats
+    implicit val ser: Serialization = org.json4s.jackson.Serialization
+    val groupId = "console"+Random.nextLong(100000)
+    careless(json[OsMetrics](OsMetrics.topicBareJson,groupId)).mapEval(commit).foreachL(println)
+  }
 }
