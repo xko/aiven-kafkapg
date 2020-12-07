@@ -63,7 +63,7 @@ object FromKafkaToConsole extends MainCanWait {
   implicit val ser: Serialization = org.json4s.jackson.Serialization
   override def go(args: Array[String]): Task[Unit] = {
     val groupId = "console"+Random.nextLong(100000) // can run many of these
-    careless(json[OsMetrics](OsMetrics.topicBareJson,groupId)).mapEval(commit).foreachL(println)
+    careless(json[OsMetrics](OsMetrics.topicBareJson,groupId)).mapEval(commit).dump("Received:").completedL
   }
 }
 
@@ -77,6 +77,6 @@ object FromKafkaToPg extends MainCanWait {
       }.map { m =>
         m.to(pg.task(OsMetricsTable.query += m.value))
       }
-    }}.mapEval(commit).foreachL(println)
+    }}.mapEval(commit).dump("Received:").completedL
   }
 }
