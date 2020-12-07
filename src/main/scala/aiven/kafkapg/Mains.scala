@@ -58,6 +58,16 @@ object ToKafkaEvery3s extends MainCanWait {
     )
 }
 
+case class Noise(random: Long, randomer: Long)
+object NoiseToKafkaEvery5s extends MainCanWait {
+  implicit val fmt: Formats = Json.formats
+  override def go(args: Array[String]): Task[Unit] =
+    KafkaPublisher.publish(
+      Observable.interval(5.second).map(_ => Noise(Random.nextLong(), Random.nextLong() + Random.nextLong())),
+      OsMetrics.topicBareJson
+    )
+}
+
 object FromKafkaToConsole extends MainCanWait {
   implicit val fmt: Formats = Json.formats
   implicit val ser: Serialization = org.json4s.jackson.Serialization
