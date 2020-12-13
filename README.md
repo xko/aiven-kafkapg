@@ -44,7 +44,7 @@ They can be started with `bin/sbt it:test`, or individually - `bin/sbt "it:testO
 ### Running
 
 Several main classes defined in [Mains.scala](src/main/scala/aiven/kafkapg/Mains.scala). 
-The sbt command `run` will let you choose the one to run. Or use `bin/sbt "runMain ..."` to start individually 
+The sbt command `run` will show the menu to select one. Or use `bin/sbt "runMain ..."` with qualified name, to start directly. 
 - `aiven.kafkapg.ToKafkaConnectEvery3s` sends messages to the topic, read by Kafka-connect service. 
   In this case consumer in not needed - data end up in postgres automatically
 - `aiven.kafkapg.ToKafkaEvery3s` sends messages to the topic, read by one of the consumers below
@@ -52,7 +52,7 @@ The sbt command `run` will let you choose the one to run. Or use `bin/sbt "runMa
 - `aiven.kafkapg.FromKafkaToConsole` consumes messages and prints to console, ignoring the errors
 - `aiven.kafkapg.FromKafkaToPg` consumes messages and stores to Postgres, currently fails on errors ("dead-letters" behavior is still TBD)
 
-The last two read data from postgres. Both accept host name as an argument, defaulting to all hosts. E.g. :
+The remaining two read data from postgres. Both accept host name as an argument, defaulting to all hosts. E.g. :
 -  `bin/sbt "runMain  aiven.kafkapg.FromPgLast10Records storm"` will show to see last 10 records from host "storm"
 -  `bin/sbt "runMain  aiven.kafkapg.FromPgAvgCPULastHour"` will show average of the CPU load across all hosts during last hour
    or None if there are no records
