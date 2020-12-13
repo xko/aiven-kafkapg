@@ -37,7 +37,7 @@ class PostgresIntegration extends AsyncFlatSpec with BeforeAndAfterEach with Bef
     val metrics = OsMetrics.initial.copy(hostName = "apparat-" + Random.nextInt(100000))
     val expected = metrics.copy(timestamp = metrics.timestamp.truncatedTo(ChronoUnit.MILLIS)) //pg doesn't keep nanos
     val toKafka = KafkaPublisher.publish(Observable.eval(metrics),topic)
-    val kafkaToPg = insistent { inDb { pg => // will retry on pg errors
+    val kafkaToPg = inDb { pg => insistent {  // will retry on pg errors, but not on failed connection
       fragile { // deserialization will fail fast
         fromJson[OsMetrics](topic, "pg_writer")
       }.map { msg =>

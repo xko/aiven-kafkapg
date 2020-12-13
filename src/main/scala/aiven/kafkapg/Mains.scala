@@ -81,7 +81,7 @@ object FromKafkaToPg extends MainCanWait {
   implicit val fmt: Formats = Json.formats
   implicit val ser: Serialization = org.json4s.jackson.Serialization
   override def go(args: Array[String]): Task[Unit] = {
-    insistent { inDb { pg => // will retry on pg errors
+    inDb { pg => insistent {  // will retry on pg errors, but not on failed connection
       fragile { // deserialization will fail fast
         fromJson[OsMetrics](OsMetrics.topicBareJson, OsMetrics.pgSinkGroupId)
       }.map { m =>
