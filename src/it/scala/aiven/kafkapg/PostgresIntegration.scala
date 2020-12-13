@@ -39,12 +39,12 @@ class PostgresIntegration extends AsyncFlatSpec with BeforeAndAfterEach with Bef
     val toKafka = KafkaPublisher.publish(Observable.eval(metrics),topic)
     val kafkaToPg = insistent { inDb { pg => // will retry on pg errors
       fragile { // deserialization will fail fast
-        json[OsMetrics](topic, "pg_writer")
-      }.map {d =>
-        d.to( pg.task(OsMetricsTable.query += d.value) )
+        fromJson[OsMetrics](topic, "pg_writer")
+      }.map { msg =>
+        msg.wrap( pg.task(OsMetricsTable.query += msg.value) )
       }
     }}.mapEval(commit)
-    val fromPg = inDb( _.stream(OsMetricsTable.queryBy(Some(metrics.hostName)).result) ).firstL
+    val fromPg = inDb(_.stream(OsMetricsTable.queryBy(Some(metrics.hostName)).result)).firstL
     toKafka.flatMap(_ => kafkaToPg.firstL).flatMap(_ => fromPg).map { res =>
       res.head should === (expected)
     }.timeout(20.seconds).runToFuture

@@ -35,7 +35,7 @@ class ConsumerIntegration extends AsyncFlatSpec with BeforeAndAfterEach with Bef
   "fragile" should "consume once" in {
     val order = TestOrder("water chip", Random.nextLong(100000))
     val publish = KafkaPublisher.publish(Observable.eval(order),test_orders)
-    val consume = fragile(json[TestOrder](test_orders,"delivery")).mapEval(commit).firstL
+    val consume = fragile(fromJson[TestOrder](test_orders, "delivery")).mapEval(commit).firstL
     publish.flatMap(_ => consume).map { res =>
       res should === (order)
     }.timeout(30.seconds).runToFuture.flatMap{_=>
@@ -46,7 +46,7 @@ class ConsumerIntegration extends AsyncFlatSpec with BeforeAndAfterEach with Bef
   "fragile" should "fail on wrong message" in {
     val joe = TestPerson("Joe", "Doe")
     val publish = KafkaPublisher.publish[TestPerson](Observable.eval(joe), test_orders).timeout(20.seconds)
-    val consumeWrong = fragile(json[TestOrder](test_orders, "delivery")).mapEval(commit).firstL
+    val consumeWrong = fragile(fromJson[TestOrder](test_orders, "delivery")).mapEval(commit).firstL
     publish.runToFuture.flatMap { _ =>
       recoverToSucceededIf[MappingException](consumeWrong.runToFuture)
     }
@@ -55,8 +55,8 @@ class ConsumerIntegration extends AsyncFlatSpec with BeforeAndAfterEach with Bef
   "fragile" should "fail on wrong message, then succeed" in {
     val joe = TestPerson("Joe", "Doe")
     val publish = KafkaPublisher.publish[TestPerson](Observable.eval(joe), test_orders).timeout(20.seconds)
-    val consumeWrong = fragile(json[TestOrder](test_orders, "delivery")).mapEval(commit).firstL
-    val consumeRight = fragile(json[TestPerson](test_orders, "delivery")).mapEval(commit).firstL
+    val consumeWrong = fragile(fromJson[TestOrder](test_orders, "delivery")).mapEval(commit).firstL
+    val consumeRight = fragile(fromJson[TestPerson](test_orders, "delivery")).mapEval(commit).firstL
     publish.runToFuture.flatMap { _ =>
         recoverToExceptionIf[MappingException](consumeWrong.runToFuture)
     }.flatMap( _ => consumeRight.runToFuture ).map { res =>
@@ -69,7 +69,7 @@ class ConsumerIntegration extends AsyncFlatSpec with BeforeAndAfterEach with Bef
     val chip = TestOrder("water chip", Random.nextLong(100000))
     val publishWrong = KafkaPublisher.publish(Observable.eval(joe),test_orders)
     val publishRight = KafkaPublisher.publish(Observable.eval(chip),test_orders)
-    val consume = careless(json[TestOrder](test_orders, "delivery")).mapEval(commit).firstL
+    val consume = careless(fromJson[TestOrder](test_orders, "delivery")).mapEval(commit).firstL
     publishWrong.flatMap(_=> publishRight).flatMap(_ => consume).map {res =>
       res should === (chip)
     }.runToFuture

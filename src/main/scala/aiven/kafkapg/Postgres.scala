@@ -14,7 +14,7 @@ object Postgres  {
 
   def inDb[R](config: Config)(action:Postgres  => Observable[R]): Observable[R] =
     Observable.eval(Database.forConfig("",config))
-              .bracket(db => action(Postgres(db)))( db => Task(db.close()) )
+              .bracket( db => action(Postgres(db)) )( db => Task(db.close()) )
 
   def inDb[R](action:Postgres  => Observable[R]): Observable[R] = inDb(defaultConfig)(action)
 
