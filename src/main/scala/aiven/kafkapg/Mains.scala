@@ -90,3 +90,17 @@ object FromKafkaToPg extends MainCanWait {
     }}.mapEval(commit).dump("Received:").completedL
   }
 }
+
+object FromKafkaToPgCareless extends MainCanWait {
+  implicit val fmt: Formats = Json.formats
+  implicit val ser: Serialization = org.json4s.jackson.Serialization
+  override def go(args: Array[String]): Task[Unit] = {
+    inDb { pg => insistent {  // will retry on pg errors, but not on failed connection
+      carelessHonest { // will ignore and log de12n errors
+        fromJson[OsMetrics](OsMetrics.topicBareJson, OsMetrics.pgSinkGroupId)
+      }.map { m =>
+        m.wrap(pg.task(OsMetricsTable.query += m.value))
+      }
+    }}.mapEval(commit).dump("Received:").completedL
+  }
+}
