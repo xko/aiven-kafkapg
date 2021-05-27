@@ -15,8 +15,8 @@ All the needed services are deployed to Aiven cloud by terraform-based automatio
 - all `init-*` scripts require [aiven CLI](https://github.com/aiven/aiven-client) installed and available on `$PATH` 
 - `init-aiven` additionally requires **[Terraform](https://learn.hashicorp.com/tutorials/terraform/install-cli)**
 - main code is writen in [Scala](https://www.scala-lang.org/) 2.13, which requires **JDK 11** or later.
-  It is [sbt](https://www.scala-sbt.org)-based. Minimal sbt [launcher](bin/sbt) is provided, so only JDK is required, 
-  but you can of course use your own sbt installation
+- build and run rely on [sbt](https://www.scala-sbt.org). Minimal sbt [launcher](bin/sbt) is provided, so only JDK is a prerequisite, 
+  but existing sbt instance can be used as well.
 - all the shell commands below are to be run from the root of this repo clone 
   
 ##### 1. Aiven infrastructure
